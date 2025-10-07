@@ -11,7 +11,9 @@ class Exp(Function):
         return np.exp(x)
 
     def backward(self, gy: np.ndarray) -> np.ndarray:
-        x = self.input.data
+        if not hasattr(self, 'inputs') or not self.inputs:
+            raise ValueError('Inputs are not set for this function.')
+        x = self.inputs[0].data
         if x is None:
             raise ValueError('Input data must not be None.')
         return np.exp(x) * gy
