@@ -31,10 +31,23 @@ class Variable:
 
         while funcs:
             f = funcs.pop()
-            x, y = f.input, f.output
-            if y.grad is None:
-                raise ValueError('Gradient of output is None.')
-            x.grad = f.backward(y.grad)
+            outputs = getattr(f, 'outputs', None)
+            if outputs is None:
+                raise ValueError('Function outputs are missing.')
 
-            if x.creator is not None:
-                funcs.append(x.creator)
+            gys = [output.grad for output in outputs]
+            if any(gy is None for gy in gys):
+                raise ValueError('Gradient of output is None.')
+
+            gxs = f.backward(*gys)
+            if not isinstance(gxs, tuple):
+                gxs = (gxs,)
+
+            inputs = getattr(f, 'inputs', None)
+            if inputs is None:
+                raise ValueError('Function inputs are missing.')
+
+            for x, gx in zip(inputs, gxs):
+                x.grad = gx
+                if x.creator is not None:
+                    funcs.append(x.creator)

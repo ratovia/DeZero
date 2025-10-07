@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List, Sequence, Tuple, Union
 
 import numpy as np
 
@@ -14,19 +14,31 @@ def as_array(x: Any) -> np.ndarray:
 
 
 class Function:
-    def __call__(self, input: Variable) -> Variable:
-        x = input.data
-        if x is None:
-            raise ValueError('Input data must not be None.')
-        y = self.forward(x)
-        output = Variable(as_array(y))
-        output.set_creator(self)
-        self.input = input
-        self.output = output
-        return output
+    def __call__(self, *inputs: Variable) -> Union[Variable, List[Variable]]:
+        if len(inputs) == 1 and isinstance(inputs[0], Sequence):
+            sequence_inputs = inputs[0]
+            if all(isinstance(x, Variable) for x in sequence_inputs):
+                inputs = tuple(sequence_inputs)  # type: ignore[assignment]
 
-    def forward(self, x: np.ndarray) -> np.ndarray:
+        xs = [x.data for x in inputs]
+        for x in xs:
+            if x is None:
+                raise ValueError('Input data must not be None.')
+
+        ys = self.forward(*xs)
+        if not isinstance(ys, tuple):
+            ys = (ys,)
+
+        outputs = [Variable(as_array(y)) for y in ys]
+        for output in outputs:
+            output.set_creator(self)
+
+        self.inputs = list(inputs)
+        self.outputs = outputs
+        return outputs[0] if len(outputs) == 1 else outputs
+
+    def forward(self, *xs: np.ndarray) -> Tuple[np.ndarray, ...] | np.ndarray:
         raise NotImplementedError()
 
-    def backward(self, gy: np.ndarray) -> np.ndarray:
+    def backward(self, *gys: np.ndarray) -> Tuple[np.ndarray, ...] | np.ndarray:
         raise NotImplementedError()
