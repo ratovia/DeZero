@@ -54,3 +54,8 @@ class Variable:
                     x.grad = x.grad + gx
                 if x.creator is not None:
                     funcs.append(x.creator)
+
+    def clear_grad(self) -> None:
+        """Reset the stored gradient."""
+
+        self.grad = None
