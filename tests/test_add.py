@@ -35,6 +35,20 @@ class AddTest(unittest.TestCase):
         expected = np.array([4.0, 6.0])
         self.assertTrue(np.allclose(y.data, expected))
 
+    def test_backward_after_clearing_grad(self):
+        x = Variable(np.array(1.0))
+
+        y1 = add(x, x)
+        y1.backward()
+        self.assertTrue(np.allclose(x.grad, np.array(2.0)))
+
+        x.clear_grad()
+
+        y2 = add(x, add(x, x))
+        y2.backward()
+        self.assertTrue(np.allclose(y2.data, np.array(3.0)))
+        self.assertTrue(np.allclose(x.grad, np.array(3.0)))
+
 
 if __name__ == '__main__':
     unittest.main()
