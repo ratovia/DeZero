@@ -17,17 +17,24 @@ class Variable:
         self.data: Optional[np.ndarray] = data
         self.grad: Optional[np.ndarray] = None
         self.creator: Optional[Function] = None
+        self.generation: int = 0
 
     def set_creator(self, func: Function) -> None:
         self.creator = func
+        self.generation = func.generation + 1
 
     def backward(self) -> None:
         if self.grad is None:
             self.grad = np.ones_like(self.data)
 
         funcs = []
+
+        def add_func(f: Function) -> None:
+            funcs.append(f)
+            funcs.sort(key=lambda func: func.generation)
+
         if self.creator is not None:
-            funcs.append(self.creator)
+            add_func(self.creator)
 
         while funcs:
             f = funcs.pop()
@@ -53,7 +60,7 @@ class Variable:
                 else:
                     x.grad = x.grad + gx
                 if x.creator is not None:
-                    funcs.append(x.creator)
+                    add_func(x.creator)
 
     def clear_grad(self) -> None:
         """Reset the stored gradient."""
