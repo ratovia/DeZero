@@ -25,6 +25,7 @@ class Function:
             if x is None:
                 raise ValueError('Input data must not be None.')
 
+        self.generation = max((x.generation for x in inputs), default=0)
         ys = self.forward(*xs)
         if not isinstance(ys, tuple):
             ys = (ys,)
