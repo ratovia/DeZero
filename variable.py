@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING
 
 import numpy as np
 
@@ -66,3 +66,25 @@ class Variable:
         """Reset the stored gradient."""
 
         self.grad = None
+
+    @staticmethod
+    def _ensure_variable(value: Any) -> "Variable":
+        if isinstance(value, Variable):
+            return value
+        return Variable(np.array(value))
+
+    def __add__(self, other: Any) -> "Variable":
+        from add import add as add_func
+
+        other_var = self._ensure_variable(other)
+        return add_func(self, other_var)
+
+    def __radd__(self, other: Any) -> "Variable":
+        return self.__add__(other)
+
+    def __pow__(self, power: Any) -> "Variable":
+        from square import square as square_func
+
+        if power == 2:
+            return square_func(self)
+        raise ValueError("現在は指数2のみ対応しています。")

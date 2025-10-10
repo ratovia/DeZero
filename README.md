@@ -10,6 +10,5 @@ python main.py
 
 ## テスト
 ```bash
-python -m unittest tests.test_square
+python -m unittest tests/*.py  
 ```
-`Square` 関数の順伝播・逆伝播・勾配確認が実行されます。
