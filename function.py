@@ -6,6 +6,7 @@ import weakref
 
 import numpy as np
 
+from config import Config
 from variable import Variable
 
 
@@ -27,17 +28,22 @@ class Function:
             if x is None:
                 raise ValueError('Input data must not be None.')
 
-        self.generation = max((x.generation for x in inputs), default=0)
         ys = self.forward(*xs)
         if not isinstance(ys, tuple):
             ys = (ys,)
 
         outputs = [Variable(as_array(y)) for y in ys]
-        for output in outputs:
-            output.set_creator(self)
 
-        self.inputs = list(inputs)
-        self.outputs = [weakref.ref(output) for output in outputs]
+        if Config.enable_backprop:
+            self.generation = max((x.generation for x in inputs), default=0)
+            for output in outputs:
+                output.set_creator(self)
+            self.inputs = list(inputs)
+            self.outputs = [weakref.ref(output) for output in outputs]
+        else:
+            self.inputs = []
+            self.outputs = []
+
         return outputs[0] if len(outputs) == 1 else outputs
 
     def forward(self, *xs: np.ndarray) -> Tuple[np.ndarray, ...] | np.ndarray:

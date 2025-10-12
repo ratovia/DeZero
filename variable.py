@@ -9,13 +9,14 @@ if TYPE_CHECKING:
 
 
 class Variable:
-    def __init__(self, data: np.ndarray) -> None:
+    def __init__(self, data: np.ndarray, name: Optional[str] = None) -> None:
         if data is None:
             raise TypeError('None is not supported')
         if not isinstance(data, np.ndarray):
             raise TypeError(f'{type(data)} is not supported')
 
         self.data: np.ndarray = data
+        self.name = name
         self.grad: Optional[np.ndarray] = None
         self.creator: Optional[Function] = None
         self.generation: int = 0
@@ -24,7 +25,7 @@ class Variable:
         self.creator = func
         self.generation = func.generation + 1
 
-    def backward(self) -> None:
+    def backward(self, retain_grad: bool = False) -> None:
         if self.grad is None:
             self.grad = np.ones_like(self.data)
 
@@ -67,6 +68,12 @@ class Variable:
                 if x.creator is not None:
                     add_func(x.creator)
 
+            if not retain_grad:
+                for output_ref in output_refs:
+                    output = output_ref()
+                    if output is not None:
+                        output.grad = None
+
     def clear_grad(self) -> None:
         """Reset the stored gradient."""
 
@@ -93,3 +100,28 @@ class Variable:
         if power == 2:
             return square_func(self)
         raise ValueError("現在は指数2のみ対応しています。")
+
+    def __len__(self) -> int:
+        return len(self.data)
+
+    def __repr__(self):
+        if self.data is None:
+            return 'variable(None)'
+        p = str(self.data).replace('\n', '\n' + ' ' * 9)
+        return f'variable({p})'
+
+    @property
+    def shape(self) -> tuple[int, ...]:
+        return self.data.shape
+
+    @property
+    def ndim(self) -> int:
+        return self.data.ndim
+
+    @property
+    def size(self) -> int:
+        return self.data.size
+
+    @property
+    def dtype(self) -> np.dtype:
+        return self.data.dtype
