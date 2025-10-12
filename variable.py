@@ -38,9 +38,13 @@ class Variable:
 
         while funcs:
             f = funcs.pop()
-            outputs = getattr(f, 'outputs', None)
-            if outputs is None:
+            output_refs = getattr(f, 'outputs', None)
+            if output_refs is None:
                 raise ValueError('Function outputs are missing.')
+
+            outputs = [output_ref() for output_ref in output_refs]
+            if any(output is None for output in outputs):
+                raise ValueError('Function output has been deallocated.')
 
             gys = [output.grad for output in outputs]
             if any(gy is None for gy in gys):

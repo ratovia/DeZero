@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any, List, Sequence, Tuple, Union
 
+import weakref
+
 import numpy as np
 
 from variable import Variable
@@ -35,7 +37,7 @@ class Function:
             output.set_creator(self)
 
         self.inputs = list(inputs)
-        self.outputs = outputs
+        self.outputs = [weakref.ref(output) for output in outputs]
         return outputs[0] if len(outputs) == 1 else outputs
 
     def forward(self, *xs: np.ndarray) -> Tuple[np.ndarray, ...] | np.ndarray:
