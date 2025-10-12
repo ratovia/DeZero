@@ -9,12 +9,13 @@ if TYPE_CHECKING:
 
 
 class Variable:
-    def __init__(self, data: Optional[np.ndarray]) -> None:
-        if data is not None:
-            if not isinstance(data, np.ndarray):
-                raise TypeError(f'{type(data)} is not supported')
+    def __init__(self, data: np.ndarray) -> None:
+        if data is None:
+            raise TypeError('None is not supported')
+        if not isinstance(data, np.ndarray):
+            raise TypeError(f'{type(data)} is not supported')
 
-        self.data: Optional[np.ndarray] = data
+        self.data: np.ndarray = data
         self.grad: Optional[np.ndarray] = None
         self.creator: Optional[Function] = None
         self.generation: int = 0
