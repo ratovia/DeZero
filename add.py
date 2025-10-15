@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Sequence
+from typing import Any, Sequence
 
 import numpy as np
 
@@ -24,8 +24,20 @@ class Add(Function):
         return tuple(gy for _ in range(len(self.inputs)))
 
 
-def add(*inputs: Variable | Sequence[Variable]) -> Variable:
+def add(*inputs: Any) -> Variable:
+    if len(inputs) == 0:
+        raise ValueError('Add function requires at least one input.')
+
     if len(inputs) == 1 and isinstance(inputs[0], Sequence):
         sequence_inputs = inputs[0]
-        return Add()(*sequence_inputs)
-    return Add()(*inputs)  # type: ignore[arg-type]
+        variables = [Variable._ensure_variable(value) for value in sequence_inputs]
+    else:
+        variables = [Variable._ensure_variable(value) for value in inputs]
+
+    if not variables:
+        raise ValueError('Add function requires at least one input.')
+
+    return Add()(*variables)  # type: ignore[arg-type]
+
+
+Variable.__add__ = add  # type: ignore[assignment]
