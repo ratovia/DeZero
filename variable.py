@@ -85,15 +85,6 @@ class Variable:
             return value
         return Variable(np.array(value))
 
-    def __add__(self, other: Any) -> "Variable":
-        from add import add as add_func
-
-        other_var = self._ensure_variable(other)
-        return add_func(self, other_var)
-
-    def __radd__(self, other: Any) -> "Variable":
-        return self.__add__(other)
-
     def __pow__(self, power: Any) -> "Variable":
         from square import square as square_func
 

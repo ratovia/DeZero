@@ -49,6 +49,13 @@ class AddTest(unittest.TestCase):
         self.assertTrue(np.allclose(y2.data, np.array(3.0)))
         self.assertTrue(np.allclose(x.grad, np.array(3.0)))
 
+    def test_operator_overload_with_scalar(self):
+        x = Variable(np.array(2.0))
+        y = x + 3
+        y.backward()
+        self.assertTrue(np.allclose(y.data, np.array(5.0)))
+        self.assertTrue(np.allclose(x.grad, np.array(1.0)))
+
 
 if __name__ == '__main__':
     unittest.main()
